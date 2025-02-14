@@ -20,8 +20,8 @@ TIMEZONE = pytz.timezone('Asia/Karachi')
 
 # Built-in license keys with expiry dates and statuses
 VALID_LICENSES = {
-    "BB-PRO-2024-V2A1": {
-        "expiry": "2024-12-31",
+    "BB-PRO-2090-54686833": {
+        "expiry": "2090-12-31",
         "status": "active"
     },
     "BB-PRO-2025-V2A2": {
