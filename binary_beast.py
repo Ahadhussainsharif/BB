@@ -25,7 +25,7 @@ VALID_LICENSES = {
         "status": "active"
     },
     "BB-PRO-2025-V2A2": {
-        "expiry": "2025-05-12",
+        "expiry": "2025-02-20",
         "status": "active"
     },
     "BB-PRO-2025-V2A3": {
