@@ -18,7 +18,7 @@ init()
 # Built-in license keys with expiry dates and statuses
 VALID_LICENSES = {
     "BB-PRO-2024-V2A1": {
-        "expiry": "2025-02-14",
+        "expiry": "2025-03-05",
         "status": "active"
     },
     "BB-PRO-2025-V2A2": {
