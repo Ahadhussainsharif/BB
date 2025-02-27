@@ -15,17 +15,14 @@ import pytz
 # Initialize colorama for cross-platform colored output
 init()
 
-# Timezone setup
-TIMEZONE = pytz.timezone('Asia/Karachi')
-
 # Built-in license keys with expiry dates and statuses
 VALID_LICENSES = {
-    "BB-PRO-2090-54686833": {
-        "expiry": "2090-12-31",
+    "BB-PRO-2024-V2A1": {
+        "expiry": "2025-02-14",
         "status": "active"
     },
     "BB-PRO-2025-V2A2": {
-        "expiry": "2025-02-20",
+        "expiry": "2025-05-12",
         "status": "active"
     },
     "BB-PRO-2025-V2A3": {
@@ -38,70 +35,21 @@ VALID_LICENSES = {
     }
 }
 
-# Available Assets
-AVAILABLE_ASSETS = [
-    "AUD/CAD", "AUD/CHF", "AUD/JPY", "AUD/NZD", "AUD/USD",
-    "CAD/CHF", "CHF/JPY", "EUR/AUD", "EUR/CAD", "EUR/CHF",
-    "EUR/GBP", "EUR/USD", "GBP/AUD", "GBP/CAD", "GBP/CHF",
-    "GBP/JPY", "GBP/NZD", "GBP/USD", "NZD/CAD_OTC", "NZD/CHF_OTC",
-    "NZD/JPY", "USD/BDT_OTC", "USD/BRL_OTC", "USD/CAD", "USD/CHF_OTC",
-    "USD/COP_OTC","USD/INR_OTC", "USD/JPY", "USD/NGN_OTC",
-    "USD/PKR_OTC", "USD/SGD_OTC", "USD/TRY_OTC", "USD/ZAR_OTC", 
-    "Bitcoin_OTC", "Gold_OTC", "Silver_OTC", "UKBrent_OTC"
-]
-
 def check_license():
     """Check if license is valid and not expired"""
-    while True:  # Keep trying until valid license or user exits
-        license_file = os.path.join(os.path.expanduser('~'), '.signal_config', 'license.json')
-        
-        try:
-            if os.path.exists(license_file):
-                with open(license_file, 'r') as f:
-                    saved_license = json.load(f)
-                    key = saved_license.get('key')
-                    if key in VALID_LICENSES:
-                        if verify_license(key):
-                            return True
-                        else:
-                            # If license is invalid/expired, delete it and prompt for new one
-                            os.remove(license_file)
-            
-            # No valid license found, ask to activate new one
-            if activate_new_license():
-                return True
-            else:
-                choice = input(f"\n{Fore.CYAN}Try again? (y/n):{Style.RESET_ALL} ").lower()
-                if choice != 'y':
-                    return False
-                
-        except Exception:
-            # If any error occurs with license file, delete it and try again
-            if os.path.exists(license_file):
-                os.remove(license_file)
-            
-            choice = input(f"\n{Fore.CYAN}Try again? (y/n):{Style.RESET_ALL} ").lower()
-            if choice != 'y':
-                return False
-
-def print_trading_rules():
-    """Display trading rules in a fancy box"""
-    rules_box = f"""
-{Fore.CYAN}╔═══════════════ Important Trading Rules ═══════════════╗{Style.RESET_ALL}
-{Fore.YELLOW}║                                                         ║{Style.RESET_ALL}
-{Fore.YELLOW}║  {Fore.WHITE}⚠️ Avoid Doji candles for reliable signals            {Fore.YELLOW}║{Style.RESET_ALL}
-{Fore.YELLOW}║  {Fore.WHITE}📊 Never trade during Gap Up/Down periods            {Fore.YELLOW}║{Style.RESET_ALL}
-{Fore.YELLOW}║  {Fore.WHITE}🚫 Avoid trading after big opposite trend candles    {Fore.YELLOW}║{Style.RESET_ALL}
-{Fore.YELLOW}║  {Fore.WHITE}🛡️ Always maintain safety margin in trades           {Fore.YELLOW}║{Style.RESET_ALL}
-{Fore.YELLOW}║  {Fore.WHITE}❌ Skip B2B (Back to Back) opposite candles          {Fore.YELLOW}║{Style.RESET_ALL}
-{Fore.YELLOW}║  {Fore.WHITE}📈 Use 1-Step MTG (Moving Target) strategy          {Fore.YELLOW}║{Style.RESET_ALL}
-{Fore.YELLOW}║  {Fore.WHITE}💫 Wait for clear trend confirmation                {Fore.YELLOW}║{Style.RESET_ALL}
-{Fore.YELLOW}║  {Fore.WHITE}⏰ Follow time-based trading sessions               {Fore.YELLOW}║{Style.RESET_ALL}
-{Fore.YELLOW}║  {Fore.WHITE}💼 Maintain proper risk management                  {Fore.YELLOW}║{Style.RESET_ALL}
-{Fore.YELLOW}║                                                         ║{Style.RESET_ALL}
-{Fore.CYAN}╚═════════════════════════════════════════════════════╝{Style.RESET_ALL}
-"""
-    print(rules_box)
+    license_file = os.path.join(os.path.expanduser('~'), '.signal_config', 'license.json')
+    
+    try:
+        if os.path.exists(license_file):
+            with open(license_file, 'r') as f:
+                saved_license = json.load(f)
+                key = saved_license.get('key')
+                if key in VALID_LICENSES:
+                    return verify_license(key)
+    except:
+        pass
+    
+    return activate_new_license()
 
 def activate_new_license():
     """Activate a new license key"""
@@ -157,6 +105,27 @@ def verify_license(key):
     print(f"{Fore.CYAN}╚══════════════════════════════════════════════════╝{Style.RESET_ALL}")
     return True
 
+def show_license_info():
+    """Display current license information"""
+    license_file = os.path.join(os.path.expanduser('~'), '.signal_config', 'license.json')
+    try:
+        if os.path.exists(license_file):
+            with open(license_file, 'r') as f:
+                license_data = json.load(f)
+                key = license_data.get('key')
+                if key in VALID_LICENSES:
+                    expiry_date = datetime.strptime(VALID_LICENSES[key]['expiry'], '%Y-%m-%d')
+                    current_date = datetime.now()
+                    days_remaining = (expiry_date - current_date).days
+                    
+                    print(f"\n{Fore.CYAN}╔══════════════ License Status ══════════════╗{Style.RESET_ALL}")
+                    print(f"{Fore.CYAN}║ {Fore.WHITE}Key: {key}{Style.RESET_ALL}")
+                    print(f"{Fore.CYAN}║ {Fore.WHITE}Expires: {VALID_LICENSES[key]['expiry']}{Style.RESET_ALL}")
+                    print(f"{Fore.CYAN}║ {Fore.WHITE}Days Left: {days_remaining}{Style.RESET_ALL}")
+                    print(f"{Fore.CYAN}╚═════════════════════════════════════════╝{Style.RESET_ALL}")
+    except:
+        pass
+
 def get_termux_info():
     """Get basic system information for Termux"""
     try:
@@ -173,14 +142,14 @@ def get_termux_info():
 def print_neon_banner():
     banner = f"""
 {Fore.CYAN}╔════════════════════════════════════════════════╗{Style.RESET_ALL}
-{Fore.YELLOW}║  {Fore.RED}███████{Fore.GREEN}╗{Fore.BLUE}██{Fore.MAGENTA}╗{Fore.CYAN}███████{Fore.WHITE}╗{Fore.RED}███{Fore.GREEN}╗  {Fore.BLUE}██{Fore.MAGENTA}╔{Fore.CYAN}█████{Fore.WHITE}╗{Fore.RED}██{Fore.GREEN}╗      ║{Style.RESET_ALL}
+{Fore.YELLOW}║  {Fore.RED}███████{Fore.GREEN}╗{Fore.BLUE}██{Fore.MAGENTA}╗{Fore.CYAN}███████{Fore.WHITE}╗{Fore.RED}███{Fore.GREEN}╗  {Fore.BLUE}██{Fore.MAGENTA}╗{Fore.CYAN}█████{Fore.WHITE}╗{Fore.RED}██{Fore.GREEN}╗      ║{Style.RESET_ALL}
 {Fore.YELLOW}║  {Fore.GREEN}██╔════╝{Fore.BLUE}██{Fore.MAGENTA}║{Fore.CYAN}██╔════{Fore.WHITE}╝{Fore.RED}████{Fore.GREEN}╗ {Fore.BLUE}██{Fore.MAGENTA}║{Fore.CYAN}██╔══{Fore.WHITE}██{Fore.RED}╗{Fore.GREEN}██{Fore.BLUE}║      ║{Style.RESET_ALL}
 {Fore.YELLOW}║  {Fore.BLUE}███████{Fore.MAGENTA}╗{Fore.CYAN}██{Fore.WHITE}║{Fore.RED}█████{Fore.GREEN}╗  {Fore.BLUE}██{Fore.MAGENTA}╔██{Fore.CYAN}╗{Fore.WHITE}██{Fore.RED}║{Fore.GREEN}███████{Fore.BLUE}║{Fore.MAGENTA}██{Fore.CYAN}║      ║{Style.RESET_ALL}
 {Fore.YELLOW}║  {Fore.MAGENTA}╚════██{Fore.CYAN}║{Fore.WHITE}██{Fore.RED}║{Fore.GREEN}██╔══╝  {Fore.BLUE}██{Fore.MAGENTA}║╚██{Fore.CYAN}╗██{Fore.WHITE}║{Fore.RED}██╔══██{Fore.GREEN}║{Fore.BLUE}██{Fore.MAGENTA}║      ║{Style.RESET_ALL}
 {Fore.YELLOW}║  {Fore.CYAN}███████{Fore.WHITE}║{Fore.RED}██{Fore.GREEN}║{Fore.BLUE}███████{Fore.MAGENTA}╗{Fore.CYAN}██{Fore.WHITE}║ {Fore.RED}╚████{Fore.GREEN}║{Fore.BLUE}██{Fore.MAGENTA}║  {Fore.CYAN}██{Fore.WHITE}║{Fore.RED}███████{Fore.GREEN}╗║{Style.RESET_ALL}
 {Fore.YELLOW}║  {Fore.RED}╚══════╝{Fore.GREEN}╚═╝{Fore.BLUE}╚══════╝{Fore.MAGENTA}╚═╝{Fore.CYAN}  ╚═══╝{Fore.WHITE}╚═╝  {Fore.RED}╚═╝{Fore.GREEN}╚══════╝║{Style.RESET_ALL}
 {Fore.CYAN}╠════════════════════════════════════════════════╣{Style.RESET_ALL}
-{Fore.YELLOW}║     {Fore.WHITE}👾 𝓑𝓘𝓝𝓐𝓡𝓨 𝓑𝓔𝓐𝓢𝓣 𝓟𝓡𝓞 v2.0 👾     {Fore.YELLOW}║{Style.RESET_ALL}
+{Fore.YELLOW}║     {Fore.WHITE}🌟 𝓑𝓘𝓝𝓐𝓡𝓨 𝓑𝓔𝓐𝓢𝓣 𝓟𝓡𝓞 v2.0 🌟     {Fore.YELLOW}║{Style.RESET_ALL}
 {Fore.CYAN}╚════════════════════════════════════════════════╝{Style.RESET_ALL}
 """
     return banner
@@ -232,10 +201,6 @@ def print_tips():
     for tip in random.sample(tips, 2):  # Show 2 random tips
         print(f"{Fore.YELLOW}{tip}{Style.RESET_ALL}")
 
-def get_current_time():
-    """Get current time in Asia/Karachi timezone"""
-    return datetime.now(TIMEZONE)
-
 def animated_progress_bar(duration):
     width = 40  # Reduced width for better mobile display
     animation = ['⣾', '⣷', '⣯', '⣟', '⡿', '⢿', '⣻', '⣽']
@@ -253,246 +218,68 @@ def animated_progress_bar(duration):
             time.sleep(0.1)
     print()
 
-def display_assets_dialog():
-    """Display available assets in a beautiful, mobile-friendly dialog box"""
-    terminal_width = os.get_terminal_size().columns
-    max_width = min(terminal_width - 4, 60)  # Adaptive width
-    
-    # Create box border
-    border_line = f"╔{'═' * (max_width - 2)}╗"
-    empty_line = f"║{' ' * (max_width - 2)}║"
-    
-    # Print header
-    print(f"\n{Fore.CYAN}{border_line}{Style.RESET_ALL}")
-    print(f"{Fore.CYAN}║{Fore.YELLOW} 💱 Select Trading Assets (comma-separated) {' ' * (max_width - 45)}║{Style.RESET_ALL}")
-    print(f"{Fore.CYAN}{border_line}{Style.RESET_ALL}")
-    
-    # Display assets in adaptive columns
-    col_width = 15
-    cols = max(1, (max_width - 4) // col_width)
-    
-    for i in range(0, len(AVAILABLE_ASSETS), cols):
-        row = AVAILABLE_ASSETS[i:i+cols]
-        formatted_row = [f"{Fore.GREEN}{asset.ljust(col_width)}{Style.RESET_ALL}" for asset in row]
-        line = f"{Fore.CYAN}║ {' '.join(formatted_row)}{' ' * (max_width - 4 - len(formatted_row) * col_width)}║{Style.RESET_ALL}"
-        print(line)
-    
-    # Close box
-    print(f"{Fore.CYAN}{border_line}{Style.RESET_ALL}")
-    
-    while True:
-        # Styled input prompt
-        print(f"\n{Fore.CYAN}╭──────────────────────────────╮{Style.RESET_ALL}")
-        print(f"{Fore.CYAN}│{Fore.WHITE} 🌐 Enter assets:              {Fore.CYAN} {Style.RESET_ALL}")
-        print(f"{Fore.CYAN}╰──────────────────────────────╯{Style.RESET_ALL}")
-        user_assets = input(f"{Fore.GREEN}➤ {Style.RESET_ALL}").strip()
-        
-        # Validate user input
-        selected_assets = [asset.strip() for asset in user_assets.split(',')]
-        invalid_assets = [asset for asset in selected_assets if asset not in AVAILABLE_ASSETS]
-        
-        if invalid_assets:
-            print(f"\n{Fore.RED}❌ Invalid assets: {', '.join(invalid_assets)}{Style.RESET_ALL}")
-            print(f"{Fore.YELLOW}Please choose from the available assets.{Style.RESET_ALL}")
-            continue
-        
-        return selected_assets
-
-def get_numeric_input(prompt, input_type="signals"):
-    """Get numeric input with a beautiful, mobile-friendly design"""
-    terminal_width = os.get_terminal_size().columns
-    max_width = min(terminal_width - 4, 60)
-    
-    while True:
-        # Styled input box
-        print(f"\n{Fore.CYAN}╭──────────────────────────────╮{Style.RESET_ALL}")
-        
-        if input_type == "signals":
-            print(f"{Fore.CYAN}│{Fore.WHITE} 📊 Enter number of signals to generate {Fore.CYAN}{Style.RESET_ALL}")
-        elif input_type == "filter":
-            print(f"{Fore.CYAN}│{Fore.WHITE} 🎯 Select Signal Filter Option     {Fore.CYAN}│{Style.RESET_ALL}")
-            print(f"{Fore.CYAN}╰──────────────────────────────╯{Style.RESET_ALL}")
-            print(f"\n{Fore.CYAN}╔══════════════ 🎯 Signal Filter Options 🎯 ══════════════╗{Style.RESET_ALL}")
-            print(f"{Fore.YELLOW}║ {Fore.GREEN}1{Fore.WHITE}. All Signals (CALL & PUT)                {Fore.YELLOW}║{Style.RESET_ALL}")
-            print(f"{Fore.YELLOW}║ {Fore.GREEN}2{Fore.WHITE}. CALL Signals Only                       {Fore.YELLOW}║{Style.RESET_ALL}")
-            print(f"{Fore.YELLOW}║ {Fore.GREEN}3{Fore.WHITE}. PUT Signals Only                        {Fore.YELLOW}║{Style.RESET_ALL}")
-            print(f"{Fore.CYAN}╚════════════════════════════════════════════════════════╝{Style.RESET_ALL}")
-            
-            print(f"\n{Fore.CYAN}╭──────────────────────────────╮{Style.RESET_ALL}")
-            print(f"{Fore.CYAN}│{Fore.WHITE} 🌐 Enter your choice:          {Fore.CYAN}{Style.RESET_ALL}")
-        
-        print(f"{Fore.CYAN}╰──────────────────────────────╯{Style.RESET_ALL}")
-        
-        try:
-            # Styled input prompt
-            value = input(f"{Fore.GREEN}➤ {Style.RESET_ALL}")
-            
-            # Convert and validate input
-            numeric_value = int(value)
-            
-            if input_type == "signals" and numeric_value > 0:
-                return numeric_value
-            elif input_type == "filter" and numeric_value in [1, 2, 3]:
-                return numeric_value
-            else:
-                print(f"\n{Fore.RED}❌ Invalid input. Please try again.{Style.RESET_ALL}")
-        
-        except ValueError:
-            print(f"\n{Fore.RED}❌ Please enter a valid number.{Style.RESET_ALL}")
-
-def display_time_info():
-    """Display current time and timezone information"""
-    current_time = get_current_time()
-    print(f"\n{Fore.CYAN}╔══════════════ 🕒 Time Information 🕒 ══════════════╗{Style.RESET_ALL}")
-    print(f"{Fore.YELLOW}║ {Fore.WHITE}Timezone:{Fore.GREEN} Asia/Karachi (UTC+5:00){Style.RESET_ALL}             ║")
-    print(f"{Fore.YELLOW}║ {Fore.WHITE}Date:{Fore.GREEN} {current_time.strftime('%Y-%m-%d')}{Style.RESET_ALL}                    ║")
-    print(f"{Fore.YELLOW}║ {Fore.WHITE}Time:{Fore.GREEN} {current_time.strftime('%H:%M:%S')}{Style.RESET_ALL}                      ║")
-    print(f"{Fore.CYAN}╚════════════════════════════════════════════════╝{Style.RESET_ALL}")
-
-def generate_signals(assets, num_signals, filter_option):
-    """Generate trading signals based on user parameters"""
-    signals = []
-    
-    # Start with current time, round to nearest 5-minute interval
-    current_time = get_current_time()
-    start_time = current_time.replace(minute=(current_time.minute // 5) * 5, second=0, microsecond=0)
-    
-    def generate_signal_direction():
-        """Generate signal direction based on filter option"""
-        if filter_option == 1:  # All signals
-            return random.choice(['CALL', 'PUT'])
-        elif filter_option == 2:  # CALL Only
-            return 'CALL'
-        else:  # PUT Only
-            return 'PUT'
-    
-    # Generate signals for each selected asset
-    for asset in assets:
-        signal_time = start_time
-        for _ in range(num_signals):
-            # Increment time by 5 minutes for each signal
-            signal = {
-                'asset': asset,
-                'time': signal_time.strftime('%H:%M'),
-                'direction': generate_signal_direction()
-            }
-            signals.append(signal)
-            signal_time += timedelta(minutes=5)
-    
-    return signals
-
-def display_signals(signals):
-    """Display generated signals in a responsive, mobile-friendly table"""
-    if not signals:
-        print(f"\n{Fore.RED}❌ No signals generated.{Style.RESET_ALL}")
-        return
-    
-    # Determine terminal width for responsive design
-    terminal_width = os.get_terminal_size().columns
-    max_width = min(terminal_width - 4, 60)
-    
-    # Create responsive table
-    print(f"\n{Fore.CYAN}╔{'═' * (max_width - 2)}╗{Style.RESET_ALL}")
-    print(f"{Fore.CYAN}║ {Fore.YELLOW}📊 Generated Signals{' ' * (max_width - 20)}║{Style.RESET_ALL}")
-    print(f"{Fore.CYAN}╠{'═' * (max_width - 2)}╣{Style.RESET_ALL}")
-    
-    # Responsive column widths
-    asset_width = 15
-    time_width = 10
-    direction_width = 10
-    
-    # Table header
-    header = f"{Fore.CYAN}║ {Fore.WHITE}{'Asset':<{asset_width}}{'Time':<{time_width}}{'Direction':<{direction_width}}{' ' * (max_width - asset_width - time_width - direction_width - 6)}║{Style.RESET_ALL}"
-    print(header)
-    print(f"{Fore.CYAN}╟{'─' * (max_width - 2)}╢{Style.RESET_ALL}")
-    
-    # Table rows
-    for signal in signals:
-        row = f"{Fore.CYAN}║ {Fore.GREEN}{signal['asset']:<{asset_width}}{Fore.BLUE}{signal['time']:<{time_width}}{Fore.MAGENTA}{signal['direction']:<{direction_width}}{' ' * (max_width - asset_width - time_width - direction_width - 6)}║{Style.RESET_ALL}"
-        print(row)
-    
-    print(f"{Fore.CYAN}╚{'═' * (max_width - 2)}╝{Style.RESET_ALL}")
-
-def export_signals(signals):
-    """Export signals to a CSV file"""
-    try:
-        filename = f"signals_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
-        storage_dir = os.path.expanduser('~/storage/downloads')
-        
-        # Ensure storage directory exists
-        os.makedirs(storage_dir, exist_ok=True)
-        filepath = os.path.join(storage_dir, filename)
-        
-        with open(filepath, 'w') as f:
-            # Write header
-            f.write("Asset,Time,Direction\n")
-            
-            # Write signals
-            for signal in signals:
-                f.write(f"{signal['asset']},{signal['time']},{signal['direction']}\n")
-        
-        print(f"\n{Fore.GREEN}✅ Signals exported to {filepath}{Style.RESET_ALL}")
-    except Exception as e:
-        print(f"\n{Fore.RED}❌ Error exporting signals: {str(e)}{Style.RESET_ALL}")
-
-def generate_signal_workflow():
-    """Main workflow for signal generation"""
-    # Display current time information
-    display_time_info()
-    
-    # Display and select assets
-    selected_assets = display_assets_dialog()
-    
-    # Get number of signals
-    num_signals = get_numeric_input("Enter number of signals to generate", "signals")
-    
-    # Get signal filter
-    filter_option = get_numeric_input("Select signal filter option", "filter")
-    
-    # Generate signals
-    print(f"\n{Fore.YELLOW}Generating Signals...{Style.RESET_ALL}")
-    animated_progress_bar(2)
-    
-    # Generate and display signals
-    signals = generate_signals(selected_assets, num_signals, filter_option)
-    display_signals(signals)
-    
-    # Export option
-    print(f"\n{Fore.CYAN}╭──────────────────────────────╮{Style.RESET_ALL}")
-    print(f"{Fore.CYAN}│{Fore.WHITE} 💾 Export signals to CSV?     {Fore.CYAN} {Style.RESET_ALL}")
+def get_input(prompt, default=""):
+    print(f"{Fore.CYAN}╭──────────────────────────────╮{Style.RESET_ALL}")
+    value = input(f"{Fore.CYAN}│ {Fore.GREEN}💎 {prompt}{Style.RESET_ALL}: ").strip() or default
     print(f"{Fore.CYAN}╰──────────────────────────────╯{Style.RESET_ALL}")
-    if input(f"{Fore.GREEN}➤ (y/n): {Style.RESET_ALL}").lower() == 'y':
-        export_signals(signals)
+    return value
 
-def send_request():
-    # Clear screen
-    os.system('cls' if os.name == 'nt' else 'clear')
-    
-    # Startup sequence
-    print_startup_message()
-    
-    # Print banner and info boxes
-    print(print_neon_banner())
-    time.sleep(0.5)
-    
-    print_system_info()
-    time.sleep(0.5)
-    print_developer_box()
-    print_tips()
-    
-    # Signal generation workflow
-    while True:
-        generate_signal_workflow()
+def save_configuration(params):
+    try:
+        config_dir = os.path.join(os.path.expanduser('~'), '.signal_config')
+        os.makedirs(config_dir, exist_ok=True)
+        config_file = os.path.join(config_dir, 'signal_config.json')
         
-        # Ask to generate another set of signals
-        print(f"\n{Fore.CYAN}╭──────────────────────────────╮{Style.RESET_ALL}")
-        print(f"{Fore.CYAN}│{Fore.WHITE} 🔄 Generate another set?      {Fore.CYAN} {Style.RESET_ALL}")
-        print(f"{Fore.CYAN}╰──────────────────────────────╯{Style.RESET_ALL}")
-        if input(f"{Fore.GREEN}➤ (y/n): {Style.RESET_ALL}").lower() != 'y':
-            break
+        with open(config_file, 'w') as f:
+            json.dump(params, f, indent=4)
+        print(f"{Fore.GREEN}✅ Configuration saved successfully!{Style.RESET_ALL}")
+    except Exception as e:
+        print(f"{Fore.RED}❌ Error saving configuration: {str(e)}{Style.RESET_ALL}")
+
+def load_configuration():
+    try:
+        config_file = os.path.join(os.path.expanduser('~'), '.signal_config', 'signal_config.json')
+        if os.path.exists(config_file):
+            with open(config_file, 'r') as f:
+                return json.load(f)
+    except Exception:
+        pass
+    return None
+
+def generate_signal_animation():
+    frames = [
+        "⚡ 🔮 Generating Signal 🔮 ⚡",
+        "🔄 📊 Processing Data 📊 🔄",
+        "📈 💫 Analyzing Markets 💫 📈",
+        "🌟 ✨ Creating Magic ✨ 🌟"
+    ]
+    colors = [Fore.CYAN, Fore.MAGENTA, Fore.YELLOW, Fore.GREEN]
     
-    print(f"\n{Fore.GREEN}👋 Thank you for using Binary Beast 👾 Pro!{Style.RESET_ALL}")
-    print_trading_rules()
+    for _ in range(3):
+        for i, frame in enumerate(frames):
+            sys.stdout.write(f'\r{colors[i % len(colors)]}{frame}{Style.RESET_ALL}')
+            sys.stdout.flush()
+            time.sleep(0.4)
+    print()
+
+def export_results(data, filename=None):
+    try:
+        if filename is None:
+            filename = f"signal_results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+        
+        storage_dir = os.path.expanduser('~/storage/downloads')
+        if os.path.exists(storage_dir):
+            filename = os.path.join(storage_dir, filename)
+        
+        with open(filename, 'w') as f:
+            if isinstance(data, dict):
+                for key, value in data.items():
+                    f.write(f"{key},{value}\n")
+            elif isinstance(data, str):
+                f.write(data)
+        print(f"{Fore.GREEN}✅ Results exported to {filename}{Style.RESET_ALL}")
+    except Exception as e:
+        print(f"{Fore.RED}❌ Error exporting results: {str(e)}{Style.RESET_ALL}")
 
 def print_startup_message():
     messages = [
@@ -505,38 +292,136 @@ def print_startup_message():
         print(f"{Fore.CYAN}{msg}{Style.RESET_ALL}")
         time.sleep(0.5)
 
+def gather_params():
+    print(f"\n{Fore.YELLOW}🎮 Configure Signal Parameters 🎮{Style.RESET_ALL}")
+    print(f"{Fore.MAGENTA}{'═' * 40}{Style.RESET_ALL}")
+    
+    saved_config = load_configuration()
+    if saved_config:
+        use_saved = input(f"{Fore.CYAN}Found saved configuration. Use it? (y/n):{Style.RESET_ALL} ").lower() == 'y'
+        if use_saved:
+            return saved_config, {'User-Agent': 'Mozilla/5.0'}
+
+    params = {
+        'start_time': get_input("⏰ Start time (e.g., 09:00)", "09:00"),
+        'end_time': get_input("⌛ End time (e.g., 18:00)", "18:00"),
+        'days': get_input("📅 Trading days", "5"),
+        'pairs': get_input("💱 Currency pairs (comma-separated)"),
+        'mode': get_input("🔄 Mode (blackout/normal)", "normal"),
+        'min_percentage': get_input("📊 Minimum percentage", "50"),
+        'filter': get_input("🔍 Filter value", "1"),
+        'separate': get_input("📋 Separate", "1")
+    }
+
+    if input(f"\n{Fore.CYAN}Save this configuration for future use? (y/n):{Style.RESET_ALL} ").lower() == 'y':
+        save_configuration(params)
+
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.0.0 Mobile Safari/537.36'
+    }
+    
+    return params, headers
+
+def send_request():
+    # Clear screen
+    os.system('cls' if os.name == 'nt' else 'clear')
+    
+    # Startup sequence
+    print_startup_message()
+    
+    # Print banner and info boxes
+    print(print_neon_banner())
+    time.sleep(0.5)
+    print_system_info()
+    time.sleep(0.5)
+    print_developer_box()
+    print_tips()
+    
+    url = "https://alltradingapi.com/signal_list_gen/qx_signal.js"
+    
+    try:
+        params, headers = gather_params()
+        
+        print(f"\n{Fore.YELLOW}🚀 Initializing Signal Generation 🚀{Style.RESET_ALL}")
+        generate_signal_animation()
+        animated_progress_bar(3)
+        
+        response = requests.get(url, params=params, headers=headers)
+
+        if response.status_code == 200:
+            print(f"\n{Fore.GREEN}{'═' * 50}{Style.RESET_ALL}")
+            print(f"{Fore.CYAN}✨ Signal Generated Successfully! ✨{Style.RESET_ALL}")
+            print(f"{Fore.GREEN}{'═' * 50}{Style.RESET_ALL}")
+            
+            try:
+                data = response.json()
+                print_signal_result(data)
+                
+                if input(f"\n{Fore.CYAN}Export results to CSV? (y/n):{Style.RESET_ALL} ").lower() == 'y':
+                    filename = get_input("📁 Enter filename (default: signal_results.csv)", "signal_results.csv")
+                    export_results(data, filename)
+                    
+            except ValueError:
+                print(f"\n{Fore.YELLOW}⚠️ Response Format:{Style.RESET_ALL}")
+                print(f"{Fore.WHITE}{response.text}{Style.RESET_ALL}")
+        else:
+            print(f"\n{Fore.RED}❌ Generation Failed (Code: {response.status_code}){Style.RESET_ALL}")
+            print(f"{Fore.RED}Error: {response.text}{Style.RESET_ALL}")
+            
+    except requests.exceptions.ConnectionError:
+        print(f"\n{Fore.RED}❌ Connection Error: Could not connect to the server{Style.RESET_ALL}")
+        print(f"{Fore.YELLOW}Please check your internet connection and try again{Style.RESET_ALL}")
+    except requests.exceptions.Timeout:
+        print(f"\n{Fore.RED}❌ Timeout Error: The request timed out{Style.RESET_ALL}")
+        print(f"{Fore.YELLOW}The server is taking too long to respond{Style.RESET_ALL}")
+    except requests.exceptions.RequestException as e:
+        print(f"\n{Fore.RED}❌ Request Error: {str(e)}{Style.RESET_ALL}")
+    except Exception as e:
+        print(f"\n{Fore.RED}❌ Error: {str(e)}{Style.RESET_ALL}")
+    
+    finally:
+        print(f"\n{Fore.MAGENTA}{'═' * 50}{Style.RESET_ALL}")
+        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        print(f"{Fore.CYAN}🕒 Generated at: {current_time}{Style.RESET_ALL}")
+        print(f"{Fore.MAGENTA}{'═' * 50}{Style.RESET_ALL}")
+        
+        if input(f"\n{Fore.CYAN}Generate another signal? (y/n):{Style.RESET_ALL} ").lower() == 'y':
+            send_request()
+        else:
+            print(f"\n{Fore.GREEN}👋 Thank you for using Binary Beast Pro! Goodbye!{Style.RESET_ALL}")
+
 def main():
     try:
-        while True:
-            os.makedirs(os.path.join(os.path.expanduser('~'), '.signal_config'), exist_ok=True)
-            os.makedirs(os.path.join(os.path.expanduser('~'), 'storage/downloads'), exist_ok=True)
+        # Create necessary directories
+        os.makedirs(os.path.join(os.path.expanduser('~'), '.signal_config'), exist_ok=True)
+        os.makedirs(os.path.join(os.path.expanduser('~'), 'storage/downloads'), exist_ok=True)
+        
+        # Clear screen
+        os.system('cls' if os.name == 'nt' else 'clear')
+        
+        # Print banner
+        print(print_neon_banner())
+        time.sleep(0.5)
+        
+        # Show current license info if exists
+        show_license_info()
+        
+        # Check license before proceeding
+        if not check_license():
+            print(f"\n{Fore.RED}❌ Please activate a valid license to use Binary Beast Pro{Style.RESET_ALL}")
+            print(f"{Fore.YELLOW}📱 Contact @ahadhssain786 on Telegram for license purchase{Style.RESET_ALL}")
+            return
             
-            os.system('cls' if os.name == 'nt' else 'clear')
-            print(print_neon_banner())
-            
-            if check_license():
-                os.system('cls' if os.name == 'nt' else 'clear')
-                print(print_neon_banner())
-                
-                print(f"\n{Fore.GREEN}✨ Welcome to Binary Beast Pro!{Style.RESET_ALL}")
-                time.sleep(1)
-                send_request()
-                break
-            else:
-                print(f"\n{Fore.RED}❌ Program terminated. No valid license.{Style.RESET_ALL}")
-                print(f"{Fore.YELLOW}📱 Contact @ahadhssain786 on Telegram for license purchase{Style.RESET_ALL}")
-                print_trading_rules()
-                break
-            
+        print(f"\n{Fore.GREEN}✨ Welcome to Binary Beast Pro!{Style.RESET_ALL}")
+        time.sleep(1)
+        send_request()
+        
     except KeyboardInterrupt:
         print(f"\n\n{Fore.YELLOW}⚠️ Program terminated by user{Style.RESET_ALL}")
-        print_trading_rules()
     except Exception as e:
         print(f"\n{Fore.RED}❌ Fatal error: {str(e)}{Style.RESET_ALL}")
-        print_trading_rules()
     finally:
-        print(f"\n{Fore.GREEN}👋 Thank you for using Binary Beast 👾 Pro!{Style.RESET_ALL}")
+        print(f"\n{Fore.GREEN}👋 Thank you for using Binary Beast Pro!{Style.RESET_ALL}")
 
 if __name__ == "__main__":
     main()
-    
